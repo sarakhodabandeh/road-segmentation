@@ -1,152 +1,157 @@
-# CamVid Semantic Segmentation with U-Net
+CamVid Semantic Segmentation with U-Net
 
-A PyTorch-based semantic segmentation project for road-scene understanding using the CamVid dataset and a U-Net architecture.
+A PyTorch-based semantic segmentation project for road-scene understanding using the CamVid dataset and a custom U-Net architecture.
 
 The model performs pixel-level classification across 11 semantic classes, including road, sky, building, car, pedestrian, and bicyclist.
 
----
+Key Results
 
-## Project Overview
+The final model was evaluated on a held-out test set of 106 images.
+
+Metric	Result
+Best Validation mIoU	52.74%
+Test Pixel Accuracy	90.35%
+Test Mean IoU	57.18%
+Test Dice Score	68.24%
+Test Images	106
+
+The model achieved its best validation Mean IoU of 52.74% at epoch 20.
+
+Project Overview
 
 Semantic segmentation assigns a semantic class to every pixel in an image.
 
-In this project, a U-Net model is trained on the CamVid road-scene dataset to classify each pixel into one of 11 grouped semantic classes.
+In this project, a U-Net model is trained to perform semantic segmentation on road-scene images from the CamVid dataset.
 
-The project implements an end-to-end semantic segmentation pipeline:
+The project implements an end-to-end segmentation pipeline including:
 
-- Dataset preparation and train/validation/test splitting
-- RGB mask to class-ID conversion
-- PyTorch Dataset and DataLoader
-- U-Net model implementation
-- Training on Apple Silicon using MPS
-- Validation using Mean IoU
-- Final evaluation on a held-out test set
-- Per-class IoU analysis
-- Prediction visualization
-- Training-curve visualization
+CamVid dataset preparation
+RGB mask to class-ID conversion
+Train/validation/test splitting
+PyTorch Dataset and DataLoader implementation
+Custom U-Net architecture
+Training with Apple Silicon MPS acceleration
+Validation during training
+Pixel Accuracy, Mean IoU, and Dice evaluation
+Per-class IoU analysis
+Qualitative prediction visualization
+Training curve visualization
+Dataset
 
----
+This project uses the CamVid road-scene semantic segmentation dataset.
 
-## Dataset
+The original CamVid labels are grouped into 11 semantic classes:
 
-This project uses the **CamVid road-scene dataset**.
+ID	Class
+0	Sky
+1	Building
+2	Pole
+3	Road
+4	Pavement
+5	Tree
+6	SignSymbol
+7	Fence
+8	Car
+9	Pedestrian
+10	Bicyclist
 
-The original CamVid labels are mapped into 11 grouped semantic classes:
+Void and unknown pixels are assigned an ignore index of 255 and are excluded from the loss and metric calculations.
 
-| ID | Class |
-|---:|---|
-| 0 | Sky |
-| 1 | Building |
-| 2 | Pole |
-| 3 | Road |
-| 4 | Pavement |
-| 5 | Tree |
-| 6 | SignSymbol |
-| 7 | Fence |
-| 8 | Car |
-| 9 | Pedestrian |
-| 10 | Bicyclist |
+Dataset Split
+Split	Images
+Training	490
+Validation	105
+Test	106
+Total	701
+Preprocessing
 
-Pixels that do not correspond to a training class are assigned an ignore index of `255` and are excluded from the loss and metric calculations.
+All images and segmentation masks are resized to:
 
-### Dataset Split
-
-The dataset contains 701 image-mask pairs:
-
-| Split | Images |
-|---|---:|
-| Training | 490 |
-| Validation | 105 |
-| Test | 106 |
-| **Total** | **701** |
-
----
-
-## Preprocessing
-
-Input images and segmentation masks are resized to:
-
-```text
 Height: 360
 Width: 480
 Images
 
-Images are:
+Input images are:
 
 Converted to RGB
 Resized using bilinear interpolation
 Converted to PyTorch tensors
-Transposed to (C, H, W)
 Normalized from [0, 255] to [0, 1]
 Segmentation Masks
 
-Masks are:
+Segmentation masks are:
 
 Converted to RGB
 Resized using nearest-neighbor interpolation
 Converted from RGB colors to integer class IDs
-Assigned 255 for ignored/unknown pixels
+Assigned 255 to ignored/void pixels
 
 Nearest-neighbor interpolation is used for masks to prevent interpolation from creating invalid class colors.
 
-Model
+U-Net Architecture
 
-The project uses a U-Net architecture for semantic segmentation.
+The project uses a custom implementation of the U-Net encoder-decoder architecture.
 
-Input
+U-Net is well suited for semantic segmentation because it combines:
+
+Hierarchical feature extraction through the encoder
+Spatial reconstruction through the decoder
+Skip connections between corresponding encoder and decoder stages
+
+The model receives an RGB image and produces a per-pixel prediction for all 11 semantic classes.
+
+Model Input
 3 × 360 × 480
-Output
+Model Output
 11 × 360 × 480
 
-The 11 output channels correspond to the 11 semantic classes.
+Each output channel corresponds to one semantic class.
 
-For each pixel, the predicted class is obtained by selecting the class with the highest output score.
+The predicted class for each pixel is obtained by taking the argmax across the class dimension.
 
 Training
 
-The model was trained for 20 epochs using PyTorch on an Apple Silicon GPU through the Metal Performance Shaders (MPS) backend.
+The model was trained for 20 epochs using the Apple Silicon Metal Performance Shaders (MPS) backend.
 
 Training Configuration
 Parameter	Value
 Framework	PyTorch
-Device	Apple MPS
+Architecture	U-Net
+Device	Apple Silicon MPS
 Epochs	20
-Batch size	4
-Input resolution	360 × 480
-Number of classes	11
-Training samples	490
-Validation samples	105
+Batch Size	4
+Input Resolution	360 × 480
+Number of Classes	11
+Training Samples	490
+Validation Samples	105
 
-The best checkpoint was selected according to validation Mean IoU.
+The best model checkpoint was selected based on the highest validation Mean IoU.
 
-Best Validation Result
-Best Validation Mean IoU: 0.5274
+Best Validation mIoU: 0.5274
 
-The trained checkpoint is generated locally at:
+The checkpoint is saved locally as:
 
 checkpoints/best_model.pth
+Evaluation
 
-The dataset and model checkpoint are excluded from the Git repository using .gitignore.
+The final checkpoint was evaluated on the held-out test set containing 106 images.
 
-Results
-
-The final model was evaluated on the held-out test set containing 106 images.
-
+Overall Test Results
 Metric	Score
 Pixel Accuracy	90.35%
 Mean IoU	57.18%
 Dice Score	68.24%
-Metric Summary
+Metric Definitions
 
-Pixel Accuracy measures the percentage of correctly classified pixels.
+Pixel Accuracy measures the percentage of valid pixels that are classified correctly.
 
-Mean IoU (Intersection over Union) measures the average overlap between predicted and ground-truth regions across the semantic classes.
+Mean Intersection over Union (mIoU) calculates IoU independently for each class and then averages the class-level IoUs.
 
-Dice Score measures the overlap between predicted and ground-truth segmentation regions.
+Dice Score measures the overlap between the predicted segmentation and the ground-truth segmentation.
 
 Per-Class Performance
 
-The final test evaluation produced the following IoU scores:
+The final model was also evaluated separately for each semantic class.
 
 Class	IoU
 Sky	92.20%
@@ -161,45 +166,50 @@ Car	68.56%
 Pedestrian	19.17%
 Bicyclist	32.83%
 
-The model performs particularly well on large and visually distinctive regions such as:
+The model performs particularly well on large and visually distinctive regions.
 
-Road
-Sky
-Building
-Pavement
-Tree
+The strongest classes are:
 
-Smaller objects are more challenging, particularly:
+Road — 94.29% IoU
+Sky — 92.20% IoU
+Building — 82.09% IoU
+Pavement — 78.50% IoU
+Tree — 74.96% IoU
 
-Pole
-Pedestrian
-Bicyclist
-SignSymbol
-Fence
+Smaller and less visually distinctive objects remain more challenging, particularly:
 
-The strongest class is Road, with an IoU of 94.29%.
+Pole — 14.55% IoU
+Pedestrian — 19.17% IoU
+SignSymbol — 32.10% IoU
+Bicyclist — 32.83% IoU
 
-Visual Results
+This highlights the difficulty of accurately segmenting small objects in road scenes.
 
-The project includes qualitative segmentation results generated from the test set.
+Qualitative Results
 
-The generated predictions are stored in:
+The project generates visual comparisons between the original image, ground-truth segmentation, U-Net prediction, and prediction overlay.
 
+Example Segmentation Result
+
+<p align="center"> <img src="outputs/class_visualizations/sample_1.png" width="95%"> </p>
+
+Additional visualization examples are available in:
+
+outputs/class_visualizations/
 outputs/visualizations/
-
-Example predictions:
-
-<p align="center"> <img src="outputs/visualizations/sample_1.png" width="85%"> </p> <p align="center"> <img src="outputs/visualizations/sample_2.png" width="85%"> </p> <p align="center"> <img src="outputs/visualizations/sample_3.png" width="85%"> </p>
 Training Curves
 
-Training and validation curves are generated from the 20-epoch training run.
+Training and validation metrics are saved during the experiment.
 
 Training Loss
-<p align="center"> <img src="outputs/training_loss.png" width="85%"> </p>
-Validation Mean IoU
-<p align="center"> <img src="outputs/validation_miou.png" width="85%"> </p>
 
-These plots provide a visual overview of model optimization and validation performance throughout training.
+<p align="center"> <img src="outputs/training_loss.png" width="75%"> </p>
+
+Validation Mean IoU
+
+<p align="center"> <img src="outputs/validation_miou.png" width="75%"> </p>
+
+These plots show the model's learning progress over the 20 training epochs.
 
 Project Structure
 road-segmentation/
@@ -209,7 +219,19 @@ road-segmentation/
 │
 ├── outputs/
 │   ├── class_visualizations/
+│   │   ├── sample_1.png
+│   │   ├── sample_2.png
+│   │   ├── sample_3.png
+│   │   ├── sample_4.png
+│   │   └── sample_5.png
+│   │
 │   ├── visualizations/
+│   │   ├── sample_1.png
+│   │   ├── sample_2.png
+│   │   ├── sample_3.png
+│   │   ├── sample_4.png
+│   │   └── sample_5.png
+│   │
 │   ├── training_loss.png
 │   └── validation_miou.png
 │
@@ -220,34 +242,63 @@ road-segmentation/
 │   ├── metrics.py
 │   ├── plot_training.py
 │   ├── split_dataset.py
+│   ├── train.py
+│   ├── unet.py
+│   ├── visualize.py
+│   ├── visualize_classes.py
+│   │
 │   ├── test.py
 │   ├── test_classes.py
 │   ├── test_dataloader.py
 │   ├── test_dataset.py
 │   ├── test_metrics.py
 │   ├── test_model.py
-│   ├── test_per_class.py
-│   ├── train.py
-│   ├── unet.py
-│   ├── visualize.py
-│   └── visualize_classes.py
+│   └── test_per_class.py
 │
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 
-The dataset and trained checkpoint are intentionally not included in the repository.
+The raw and processed CamVid dataset files and trained model checkpoint are excluded from version control.
 
 Installation
 1. Clone the repository
 git clone https://github.com/sarakhodabandeh/road-segmentation.git
 cd road-segmentation
 2. Create a virtual environment
+
+Python 3.11 was used for development.
+
 python3.11 -m venv .venv
 3. Activate the environment
+
+macOS/Linux:
+
 source .venv/bin/activate
 4. Install dependencies
 pip install -r requirements.txt
+Dataset Setup
+
+Download the CamVid dataset and place the required images and segmentation masks inside the project's data directory.
+
+The expected processed structure is:
+
+data/
+└── processed/
+    ├── train/
+    │   ├── images/
+    │   └── masks/
+    │
+    ├── val/
+    │   ├── images/
+    │   └── masks/
+    │
+    └── test/
+        ├── images/
+        └── masks/
+
+The dataset itself is not included in this repository.
+
 Running the Project
 Test the dataset
 python -m src.test_dataset
@@ -259,25 +310,22 @@ Train the model
 python -m src.train
 Evaluate the model
 python -m src.test_metrics
-Evaluate individual classes
+Calculate per-class IoU
 python -m src.test_per_class
 Generate segmentation visualizations
 python -m src.visualize
 Generate training curves
 python -m src.plot_training
-Future Improvements
+Hardware
 
-Several improvements could potentially increase performance, especially for smaller and less frequent classes:
+Training was performed on an Apple Silicon Mac using the PyTorch MPS backend.
 
-Data augmentation
-Class-weighted loss
-Combined Cross-Entropy and Dice loss
-Learning-rate scheduling
-Transfer learning with a pretrained encoder
-Higher-resolution training
-Improved handling of small objects
-More extensive hyperparameter tuning
-Additional qualitative error analysis
+The project automatically uses MPS when available and falls back to CPU otherwise.
+
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
 Technologies
 Python 3.11
 PyTorch
@@ -285,12 +333,55 @@ NumPy
 Pillow
 Matplotlib
 Apple Metal Performance Shaders (MPS)
+Git / GitHub
+Future Improvements
+
+Several improvements could potentially increase segmentation performance, particularly for small objects:
+
+Data augmentation
+Class-weighted loss
+Dice loss or combined Cross-Entropy + Dice loss
+Learning-rate scheduling
+Transfer learning with a pretrained encoder
+A deeper or more efficient segmentation architecture
+Higher-resolution training
+Improved handling of class imbalance
+Additional qualitative analysis
+Experimenting with modern segmentation architectures
+Project Highlights
+
+This project demonstrates an end-to-end computer vision workflow:
+
+CamVid Dataset
+      ↓
+Dataset Preparation
+      ↓
+RGB Mask → Class IDs
+      ↓
+Train / Validation / Test Split
+      ↓
+PyTorch Dataset & DataLoader
+      ↓
+Custom U-Net
+      ↓
+Training on Apple MPS
+      ↓
+Validation
+      ↓
+Best Model Selection
+      ↓
+Test Evaluation
+      ↓
+Per-Class Analysis
+      ↓
+Segmentation Visualization
+
+The project was developed as a practical computer vision and deep learning project focused on semantic segmentation.
+
 Author
 
-Sara Khodabandeh
+Sara Khodabandeh Yalabadi
 
-Computer Vision & Deep Learning Project
+Computer Science graduate | Aspiring AI graduate student
 
-License
-
-This project is intended for educational and portfolio purposes.
+Focused on computer vision, deep learning, and semantic segmentation.
