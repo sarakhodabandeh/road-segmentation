@@ -87,8 +87,7 @@ The test set is kept separate from training and validation and is used only for 
 All images and segmentation masks are resized to:
 
 ```text
-Height: 360
-Width: 480
+360 × 480
 ```
 
 ### Input Images
@@ -116,7 +115,7 @@ Segmentation masks are:
 3. Converted from RGB colors to integer class IDs
 4. Assigned `255` for ignored/unknown pixels
 
-Nearest-neighbor interpolation is used for masks to prevent interpolation from creating invalid class colors.
+Nearest-neighbor interpolation is used for masks to prevent interpolation from creating invalid intermediate class colors.
 
 ---
 
@@ -256,21 +255,41 @@ The generated visualizations are stored in:
 outputs/visualizations/
 ```
 
-Example files:
+### Segmentation Examples
 
-```text
-sample_1.png
-sample_2.png
-sample_3.png
-sample_4.png
-sample_5.png
-```
+#### Example 1
+
+![Segmentation Example 1](outputs/visualizations/sample_1.png)
+
+#### Example 2
+
+![Segmentation Example 2](outputs/visualizations/sample_2.png)
+
+#### Example 3
+
+![Segmentation Example 3](outputs/visualizations/sample_3.png)
+
+#### Example 4
+
+![Segmentation Example 4](outputs/visualizations/sample_4.png)
+
+#### Example 5
+
+![Segmentation Example 5](outputs/visualizations/sample_5.png)
 
 Additional class-color visualizations are stored in:
 
 ```text
 outputs/class_visualizations/
 ```
+
+### Class Visualization Examples
+
+![Class Visualization 1](outputs/class_visualizations/sample_1.png)
+
+![Class Visualization 2](outputs/class_visualizations/sample_2.png)
+
+![Class Visualization 3](outputs/class_visualizations/sample_3.png)
 
 ---
 
@@ -280,15 +299,11 @@ The training process is also visualized using the generated learning curves.
 
 ### Training Loss
 
-```text
-outputs/training_loss.png
-```
+![Training Loss](outputs/training_loss.png)
 
 ### Validation Mean IoU
 
-```text
-outputs/validation_miou.png
-```
+![Validation Mean IoU](outputs/validation_miou.png)
 
 These plots show how the model's training loss and validation segmentation performance changed throughout the 20 training epochs.
 
@@ -363,7 +378,7 @@ cd road-segmentation
 python3.11 -m venv .venv
 ```
 
-### 3. Activate the virtual environment
+### 3. Activate the environment
 
 ```bash
 source .venv/bin/activate
@@ -501,3 +516,4 @@ Several improvements could be explored in future versions of the project:
 Interested in **Artificial Intelligence, Deep Learning, and Computer Vision**.
 
 This project was developed as a computer vision portfolio project focused on **semantic segmentation using deep learning**.
+
